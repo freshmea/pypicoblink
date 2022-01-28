@@ -5,16 +5,18 @@ import neopixel
 import adafruit_hcsr04
 import digitalio
 import simpleio
+import random
 
 sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP3, echo_pin=board.GP2)
 
 PIEZO_PIN = board.GP15
 
 # Update this to match the number of NeoPixel LEDs connected to your board.
-num_pixels = 24
-pin = digitalio.DigitalInOut(board.GP16)
+num_pixels = 36
+pin1 = digitalio.DigitalInOut(board.GP16)
+pin2 = digitalio.DigitalInOut(board.GP17)
 pixels = neopixel.NeoPixel(board.GP0, num_pixels, auto_write=False)
-pixels.brightness = 0.5
+pixels.brightness = 1
 
 tones = {
     "B0": 31,
@@ -115,98 +117,49 @@ tones = {
     "AS8": 7459,
     "B8": 7902,
     0: 0,
+    '0': 0,
     "SILENT": 0,
-    "R":0
+    "R": 0
 }
-
-song = ["E5", "G5", "A5", "P", "E5", "G5", "B5", "A5", "P", "E5", "G5", "A5", "P", "G5", "E5"]
+songs = []
+tempos = []
 
 song2 = ['E7', 'E7', 0, 'E7', 0, 'C7', 'E7', 0, 'G7', 0, 0, 0, 'G6', 0, 0, 0,
          'C7', 0, 0, 'G6', 0, 0, 'E6', 0, 0, 'A6', 0, 'B6', 0, 'AS6', 'A6', 0,
          'G6', 'E7', 'G7', 'A7', 0, 'F7', 'G7', 0, 'E7', 0, 'C7', 'D7', 'B6', 0, 0,
          'C7', 0, 0, 'G6', 0, 0, 'E6', 0, 0, 'A6', 0, 'B6', 0, 'AS6', 'A6', 0,
          'G6', 'E7', 'G7', 'A7', 0, 'F7', 'G7', 0, 'E7', 0, 'C7', 'D7', 'B6', 0, 0]
-
-song3 = ['SILENT', 'AS7', 'SILENT', 'GS7', 'SILENT', 'GS6', 'SILENT', 'E7', 'SILENT', 'GS6', 'SILENT', 'DS7', 'E8',
-         'SILENT', 'F5', 'E8', 'A7', 'SILENT', 'AS5', 'SILENT', 'F4', 'SILENT', 'FS8', 'SILENT', 'C5', 'SILENT', 'F5',
-         'SILENT', 'FS8', 'SILENT', 'E8', 'SILENT', 'AS4', 'SILENT', 'A7', 'SILENT', 'F6', 'SILENT', 'CS8', 'SILENT',
-         'G8', 'SILENT', 'AS4', 'F4', 'SILENT', 'F8', 'SILENT', 'FS8', 'B7', 'SILENT', 'FS7', 'F5', 'SILENT', 'A6',
-         'SILENT', 'E7', 'SILENT', 'FS7', 'SILENT', 'D7', 'SILENT', 'DS8', 'SILENT', 'C6', 'SILENT', 'CS6', 'A7',
-         'SILENT', 'B7', 'SILENT', 'A7', 'SILENT', 'F7', 'SILENT', 'D5', 'SILENT', 'AS7', 'SILENT', 'B7', 'SILENT',
-         'D5', 'GS7', 'SILENT', 'A5', 'SILENT', 'G5', 'SILENT', 'F5', 'SILENT', 'AS7', 'SILENT', 'E7', 'SILENT', 'FS7',
-         'G8', 'SILENT', 'F4', 'SILENT', 'D7', 'SILENT']
-
-song4 = [ 'A4'	,
-'R'	,
-'A4'	,
-'R'	,
-'A4'	,
-'R'	,
-'F4'	,
-'R'	,
-'C5'	,
-'R'	,
-'A4'	,
-'R'	,
-'F4'	,
-'R'	,
-'C5'	,
-'R'	,
-'A4'	,
-'R'	,
-'E5'	,
-'R'	,
-'E5'	,
-'R'	,
-'E5'	,
-'R'	,
-'F5'	,
-'R'	,
-'C5'	,
-'R'	,
-'G5'	,
-'R'	,
-'F5'	,
-'R'	,
-'C5'	,
-'R'	,
-'A4'	,
-'R'	,
-'F4'	,
-'F4'	,
-'F4'	,
-'AS4'	,
-'F5'	,
-'DS5'	,
-'D5'	,
-'C5'	,
-'AS5'	,
-'F5'	,
-'DS5'	,
-'D5'	,
-'C5'	,
-'AS5'	,
-'F5'	,
-'DS5'	,
-'D5'	,
-'DS5'	,
-'C5'	,
-
-]
-tempo4=[
- 50, 20, 50, 20, 50, 20, 40, 5, 20, 5,  60, 10, 40, 5, 20, 5, 60, 80, 50, 20, 50, 20, 50, 20, 40, 5, 20, 5,  60, 10, 40, 5,  20, 5, 60, 40
-    ,21, 21, 21, 128, 128, 21, 21, 21, 128, 64, 21, 21, 21, 128, 64, 21, 21, 21, 128
-]
-tempo3 = [
-    4, 2, 15, 2, 3, 3, 8, 2, 4, 2, 2, 2, 2, 4, 4, 3, 2, 13, 2, 47, 4, 9, 3, 10, 2, 9, 2, 8, 2, 51, 2, 5, 2, 20, 2, 15,
-    2, 22, 3, 8, 2, 18, 4, 2, 2, 2, 18, 2, 2, 8, 2, 2, 3, 2, 3, 2, 20, 2, 13, 2, 10, 2, 11, 2, 5, 2, 2, 2, 2, 39, 3, 8,
-    2, 4, 3, 10, 3, 13, 3, 12, 2, 2, 9, 2, 36, 3, 3, 2, 4, 2, 5, 2, 25, 2, 2, 21, 2, 14, 2, 6]
-
 tempo2 = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
           12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
           9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
           12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
           9, 9, 9, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
+
+song3 = ['G4', 'E5', 'D5', 'C5', 'G4', '0', 'G4', 'E5', 'D5', 'C5', 'A4', '0', 'A4', 'F5', 'E5', 'D5', 'B4', '0', 'G5',
+         'G5', 'F5', 'D5', 'E5', 'C5'
+         ]
+tempo3 = [
+    25, 25, 25, 25, 75, 25,
+    25, 25, 25, 25, 75, 25,
+    25, 25, 25, 25, 75, 25,
+    25, 25, 25, 25, 50, 25, 25
+]
+
+song4 = ['A4', 'A4', 'R', 'R', 'A4', 'R', 'F4', 'R', 'C5', 'R', 'A4', 'R', 'F4', 'R', 'C5', 'R', 'A4', 'R', 'E5', 'R',
+         'E5', 'R', 'E5', 'R', 'F5', 'R', 'C5', 'R', 'G5', 'R', 'F5', 'R', 'C5', 'R', 'A4', 'R', 'F4', 'F4', 'F4',
+         'AS4', 'F5', 'DS5', 'D5', 'C5', 'AS5', 'F5', 'DS5', 'D5', 'C5', 'AS5', 'F5', 'DS5', 'D5', 'DS5', 'C5'
+         ]
+tempo4 = [
+    50, 20, 50, 20, 50, 20, 40, 5, 20, 5, 60, 10, 40, 5, 20, 5, 60, 80, 50, 20, 50, 20, 50, 20, 40, 5, 20, 5, 60, 10,
+    40, 5, 20, 5, 60, 40
+    , 21, 21, 21, 128, 128, 21, 21, 21, 128, 64, 21, 21, 21, 128, 64, 21, 21, 21, 128
+]
+songs.append(song2)
+songs.append(song3)
+songs.append(song4)
+tempos.append(tempo2)
+tempos.append(tempo3)
+tempos.append(tempo4)
 
 
 def rainbow(speed):
@@ -215,15 +168,46 @@ def rainbow(speed):
             pixel_index = (i * 256 // num_pixels) + j
             pixels[i] = colorwheel(pixel_index & 255)
         pixels.show()
-        print('rainbow')
         time.sleep(speed)
 
 
-def alloff():
+def led1(speed):
     for i in range(num_pixels):
-        pixels[i] = (0, 0, 0)
-        print('red')
+        pixels[i] = (255, 255, 255)
     pixels.show()
+    time.sleep(speed)
+
+
+def led2(speed1, speed2):
+    for j in range(num_pixels / 6):
+        for i in range(6):
+            pixels[i + j * 6] = (255, 255, 255 / 6 * j)
+            pixels.show()
+            time.sleep(speed1)
+        time.sleep(speed2)
+
+
+def led3(speed):
+    for i in range(500):
+        pixels[random.randint(0, 35)] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        pixels.show()
+        time.sleep(speed)
+
+
+def led4(color):
+    for i in range(6):
+        setstripcolor(i, color)
+
+
+def alloff(time1):
+    pixels.fill((0, 0, 0))
+    pixels.show()
+    time.sleep(time1)
+
+
+def setstripcolor(setnumber, color):
+    for i in range(6):
+        pixels[i + setnumber * 6] = color
 
 
 def playtone(ton, tempo):
@@ -236,15 +220,22 @@ def playsong(mysong, tempo):
 
 
 while True:
-    playsong(song4, tempo4)
+    if pin2.value == 1:
+        for i in range(len(songs)):
+            playsong(songs[i], tempos[i])
+    alloff(0)
+    if pin1.value == 1:
+        led1(10)
+        alloff(3)
+        led2(0.01, 1)
+        led3(0.01)
+        alloff(3)
+        led4((255, 0, 0))
+        alloff(3)
+    try:
+        print((sonar.distance,))
+    except RuntimeError:
+        print("Retrying!")
+    time.sleep(0.1)
 
-#
-# while True:
-#     if pin.value == 1:
-#         rainbow(0.01)
-#     alloff()
-#     try:
-#         print((sonar.distance,))
-#     except RuntimeError:
-#         print("Retrying!")
-#     time.sleep(0.1)
+
