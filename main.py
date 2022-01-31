@@ -201,12 +201,13 @@ class Cdata:
 
 
 def rainbow(speed):
-    for j in range(255):
-        for i in range(num_pixels):
-            pixel_index = (i * 256 // num_pixels) + j
-            pixels[i] = colorwheel(pixel_index & 255)
-        pixels.show()
-        time.sleep(speed)
+    for k in range(10):
+        for j in range(255):
+            for i in range(num_pixels):
+                pixel_index = (i * 256 // num_pixels) + j
+                pixels[i] = colorwheel(pixel_index & 255)
+            pixels.show()
+            time.sleep(speed)
 
 
 def led1(speed, speed2, hue):
@@ -326,6 +327,7 @@ while True:
         setmode = 5
         led1hue = random.random()
         led1(0.5, 0.01, led1hue)
+        rainbow(0.01)
     else:
         pass
 
@@ -362,7 +364,7 @@ while True:
         if setmode == 0:
             try:
                 if sonar_dis > sonar.distance:
-                    led11(10, 0.1, 1, led1hue)
+                    led11(20, 0.1, 1, led1hue)
             except:
                 pass
         elif setmode == 1:
