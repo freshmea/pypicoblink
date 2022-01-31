@@ -6,23 +6,28 @@ import adafruit_hcsr04
 import digitalio
 import simpleio
 import random
+from analogio import AnalogIn
+import colorsys
 
 sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP3, echo_pin=board.GP2)
-
 PIEZO_PIN = board.GP15
-
-# Update this to match the number of NeoPixel LEDs connected to your board.
 num_pixels = 36
 pin1 = digitalio.DigitalInOut(board.GP16)
 pin2 = digitalio.DigitalInOut(board.GP17)
+pin3 = AnalogIn(board.GP26)
 pixels = neopixel.NeoPixel(board.GP0, num_pixels, auto_write=False)
-pixels.brightness = 1
 
+pixels.brightness = 1
+setmode = 0
+curtime1 = 0
+endtime1 = 0
+curtime2 = 0
+endtime2 = 0
 tones = {
     "B0": 31,
     "C1": 33,
     "CS1": 35,
-    "D1": 37,
+    "D1": 3 + 7,
     "DS1": 39,
     "E1": 41,
     "F1": 44,
@@ -162,6 +167,25 @@ tempos.append(tempo3)
 tempos.append(tempo4)
 
 
+class Cdata:
+    def __init__(self):
+        self.number = 0
+        self.colorhue = random.random()
+        self.timeing = 0
+        self.bright = 0
+        self.increase = 1
+
+    def update(self):
+        self.bright += self.increase
+        if self.bright == 256:
+            self.increase *= -1
+        if self.bright == 0:
+            self.increase *= -1
+            self.number += random.randint(36)
+            self.colorhue = random.random()
+
+
+
 def rainbow(speed):
     for j in range(255):
         for i in range(num_pixels):
@@ -171,32 +195,53 @@ def rainbow(speed):
         time.sleep(speed)
 
 
-def led1(speed):
-    for i in range(num_pixels):
-        pixels[i] = (255, 255, 255)
-    pixels.show()
+def led1(speed, speed2, hue):
+    for i in range(30):
+        pixels.fill(colorsys.hsv_to_rgb(hue, 1, 255 / 29 * i))
+        pixels.show()
+        time.sleep(speed2)
     time.sleep(speed)
+    for i in range(30):
+        pixels.fill(colorsys.hsv_to_rgb(hue, 1, 255 / 29 * (29 - i)))
+        pixels.show()
+        time.sleep(speed2)
 
 
-def led2(speed1, speed2):
+def led11(speed, speed2, hue, sa):
+    for i in range(30):
+        pixels.fill(colorsys.hsv_to_rgb(hue, sa, 255 / 29 * i))
+        pixels.show()
+        time.sleep(speed2)
+    time.sleep(speed)
+    for i in range(30):
+        pixels.fill(colorsys.hsv_to_rgb(hue, sa, 255 / 29 * (29 - i)))
+        pixels.show()
+        time.sleep(speed2)
+
+
+def led2(speed1, speed2, color):
     for j in range(num_pixels / 6):
         for i in range(6):
-            pixels[i + j * 6] = (255, 255, 255 / 6 * j)
+            pixels[i + j * 6] = color
             pixels.show()
             time.sleep(speed1)
         time.sleep(speed2)
 
 
 def led3(speed):
-    for i in range(500):
-        pixels[random.randint(0, 35)] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    for i in range(50):
+        pixels[random.randint(0, 35)] = colorsys.hsv_to_rgb(random.random(), 1, 255)
         pixels.show()
         time.sleep(speed)
+        alloff(0)
 
 
-def led4(color):
+def led4(time1, color):
     for i in range(6):
+        alloff(0)
         setstripcolor(i, color)
+        pixels.show()
+        time.sleep(time1)
 
 
 def alloff(time1):
@@ -218,24 +263,82 @@ def playsong(mysong, tempo):
     for i in range(len(mysong)):
         playtone(tones[mysong[i]], tempo[i])
 
+cleds= []
+for i in range(12):
+    cleds.append(Cdata())
 
 while True:
-    if pin2.value == 1:
-        for i in range(len(songs)):
-            playsong(songs[i], tempos[i])
-    alloff(0)
     if pin1.value == 1:
-        led1(10)
-        alloff(3)
-        led2(0.01, 1)
+        curtime1 = time.monotonic_ns() / 1000000000
+        temp = 0
+        while pin1.value == 1:
+            setstripcolor(temp, (255, 0, 0))
+            pixels.show()
+            simpleio.tone(PIEZO_PIN, 2000, duration=0.3)
+            temp += 1
+        endtime1 = time.monotonic_ns() / 1000000000
+
+    if pin2.value == 1:
+        curtime2 = time.monotonic_ns() / 1000000000
+        temp = 0
+        while pin2.value == 1:
+            setstripcolor(temp, (0, 255, 0))
+            pixels.show()
+            simpleio.tone(PIEZO_PIN, 1000, duration=0.3)
+            temp += 1
+        endtime2 = time.monotonic_ns() / 1000000000
+
+    if endtime1 - curtime1 < 0.2:
+        pass
+    elif endtime1 - curtime1 < 0.4:
+        led1(1, 0.1, random.random())
+        setmode = 0
+    elif endtime1 - curtime1 < 0.7:
+        led2(0.01, 1, colorsys.hsv_to_rgb(random.random(), 1, 255))
+        setmode = 1
+    elif endtime1 - curtime1 < 1.0:
         led3(0.01)
-        alloff(3)
-        led4((255, 0, 0))
-        alloff(3)
-    try:
-        print((sonar.distance,))
-    except RuntimeError:
-        print("Retrying!")
+        setmode = 2
+    elif endtime1 - curtime1 < 1.3:
+        led4(0.5, colorsys.hsv_to_rgb(random.random(), 1, 255))
+        setmode = 3
+    elif endtime1 - curtime1 < 1.6:
+        setmode = 4
+    elif endtime1 - curtime1 < 1.9:
+        setmode = 5
+    else:
+        pass
+
+    if endtime2 - curtime2 < 0.2:
+        pass
+    elif endtime2 - curtime2 < 0.4:
+        led1(1, 0.1, random.random())
+    elif endtime2 - curtime2 < 0.7:
+        led2(0.01, 1, colorsys.hsv_to_rgb(random.random(), 1, 255))
+    elif endtime2 - curtime2 < 1.0:
+        led3(0.01)
+    elif endtime2 - curtime2 < 1.4:
+        led4(0.5, colorsys.hsv_to_rgb(random.random(), 1, 255))
+    else:
+        pass
+
+    alloff(0)
+
+    curtime1 = time.monotonic_ns() / 1000000000
+    endtime1 = time.monotonic_ns() / 1000000000
+    curtime2 = time.monotonic_ns() / 1000000000
+    endtime2 = time.monotonic_ns() / 1000000000
     time.sleep(0.1)
+    print(setmode)
 
-
+    if setmode == 0:
+        try:
+            if 10 > sonar.distance:
+                led11(10, 0.1, 0, 0)
+        except:
+            pass
+    elif setmode == 1:
+        for i in range(1000):
+            for j in cleds:
+                pixels[j.number]=colorsys.hsv_to_rgb(j.colorhue, 1, j.bright)
+                j.update()
