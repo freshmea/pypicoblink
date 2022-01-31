@@ -23,6 +23,9 @@ curtime1 = 0
 endtime1 = 0
 curtime2 = 0
 endtime2 = 0
+led1hue = random.random()
+on = False
+onvalue = 13000
 tones = {
     "B0": 31,
     "C1": 33,
@@ -169,21 +172,31 @@ tempos.append(tempo4)
 
 class Cdata:
     def __init__(self):
-        self.number = 0
+        self.number = random.randint(0, 35)
         self.colorhue = random.random()
         self.timeing = 0
-        self.bright = 0
+        self.bright = random.randint(1, 255)
         self.increase = 1
 
     def update(self):
         self.bright += self.increase
         if self.bright == 256:
-            self.increase *= -1
+            self.increase = -1
         if self.bright == 0:
-            self.increase *= -1
-            self.number += random.randint(36)
+            self.increase = 1
+            self.number = random.randint(0, 35)
+            while self.check():
+                self.number = random.randint(0, 35)
             self.colorhue = random.random()
 
+    def check(self):
+        ret = True
+        for i in cleds:
+            if i.number == self.number:
+                if i == self:
+                    continue
+                return True
+        return False
 
 
 def rainbow(speed):
@@ -263,7 +276,8 @@ def playsong(mysong, tempo):
     for i in range(len(mysong)):
         playtone(tones[mysong[i]], tempo[i])
 
-cleds= []
+
+cleds = []
 for i in range(12):
     cleds.append(Cdata())
 
@@ -291,37 +305,45 @@ while True:
     if endtime1 - curtime1 < 0.2:
         pass
     elif endtime1 - curtime1 < 0.4:
-        led1(1, 0.1, random.random())
+        led1(0.5, 0.01, led1hue)
         setmode = 0
     elif endtime1 - curtime1 < 0.7:
-        led2(0.01, 1, colorsys.hsv_to_rgb(random.random(), 1, 255))
         setmode = 1
     elif endtime1 - curtime1 < 1.0:
-        led3(0.01)
         setmode = 2
     elif endtime1 - curtime1 < 1.3:
-        led4(0.5, colorsys.hsv_to_rgb(random.random(), 1, 255))
         setmode = 3
     elif endtime1 - curtime1 < 1.6:
         setmode = 4
     elif endtime1 - curtime1 < 1.9:
         setmode = 5
+        led1hue = random.random()
+        led1(0.5, 0.01, led1hue)
     else:
         pass
 
     if endtime2 - curtime2 < 0.2:
         pass
     elif endtime2 - curtime2 < 0.4:
-        led1(1, 0.1, random.random())
+        led11(10, 0.1, 1, led1hue)
     elif endtime2 - curtime2 < 0.7:
-        led2(0.01, 1, colorsys.hsv_to_rgb(random.random(), 1, 255))
+        for i in range(10000):
+            for j in cleds:
+                pixels[j.number] = colorsys.hsv_to_rgb(j.colorhue, 1, j.bright)
+                j.update()
+            pixels.show()
+        onvalue = 4000
     elif endtime2 - curtime2 < 1.0:
         led3(0.01)
-    elif endtime2 - curtime2 < 1.4:
-        led4(0.5, colorsys.hsv_to_rgb(random.random(), 1, 255))
-    else:
-        pass
-
+        onvalue = 7000
+    elif endtime2 - curtime2 < 1.3:
+        led4(0.5, colorsys.hsv_to_rgb(led1hue, 1, 255))
+        onvalue = 13000
+    elif endtime2 - curtime2 < 1.6:
+        onvalue = 20000
+        led2(0.01, 1, colorsys.hsv_to_rgb(led1hue, 1, 255))
+    elif endtime2 - curtime2 < 1.9:
+        onvalue = 30000
     alloff(0)
 
     curtime1 = time.monotonic_ns() / 1000000000
@@ -329,16 +351,47 @@ while True:
     curtime2 = time.monotonic_ns() / 1000000000
     endtime2 = time.monotonic_ns() / 1000000000
     time.sleep(0.1)
-    print(setmode)
+    print(pin3.value, on)
+    if pin3.value < onvalue:
+        on = True
+    else:
+        on = False
+    if on:
+        if setmode == 0:
+            try:
+                if 30 > sonar.distance:
+                    led11(10, 0.1, 1, led1hue)
+            except:
+                pass
+        elif setmode == 1:
+            try:
+                if 30 > sonar.distance:
+                    for i in range(10000):
+                        for j in cleds:
+                            pixels[j.number] = colorsys.hsv_to_rgb(j.colorhue, 1, j.bright)
+                            j.update()
+                        pixels.show()
+            except:
+                pass
+        elif setmode == 2:
+            try:
+                if 30 > sonar.distance:
+                    led3(0.01)
+            except:
+                pass
+        elif setmode == 3:
+            try:
+                if 30 > sonar.distance:
+                    led4(0.5, colorsys.hsv_to_rgb(led1hue, 1, 255))
+            except:
+                pass
+        elif setmode == 4:
+            try:
+                if 30 > sonar.distance:
+                    led2(0.01, 1, colorsys.hsv_to_rgb(led1hue, 1, 255))
+            except:
+                pass
 
-    if setmode == 0:
-        try:
-            if 10 > sonar.distance:
-                led11(10, 0.1, 0, 0)
-        except:
-            pass
-    elif setmode == 1:
-        for i in range(1000):
-            for j in cleds:
-                pixels[j.number]=colorsys.hsv_to_rgb(j.colorhue, 1, j.bright)
-                j.update()
+
+
+
