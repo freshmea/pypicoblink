@@ -296,6 +296,8 @@ def led7(time1):
 def led8(speed1, color):
     for j in range(5):
         for i in range(6):
+            if i == 0:
+                setstripcolor(i, (128, 0, 128))
             if i == 1:
                 setstripcolor(i, (255, 0, 0))
             if i == 2:
@@ -306,17 +308,7 @@ def led8(speed1, color):
                 setstripcolor(i, (127, 255, 0))
             if i == 5:
                 setstripcolor(i, (137, 207, 240))
-            if i == 6:
-                setstripcolor(i, (128, 0, 128))
 
-
-
-
-
-
-
-            else:
-                setstripcolor(i, color)
             pixels.show()
             time.sleep(speed1)
         alloff(0)
@@ -346,7 +338,7 @@ def playsong(mysong, tempo):
 cleds = []
 for i in range(12):
     cleds.append(Cdata())
-/
+
 while True:
     if pin1.value == 1:
         curtime1 = time.monotonic_ns() / 1000000000
@@ -427,6 +419,7 @@ while True:
                 if sonar_dis > sonar.distance:
                     temp = random.randint(0, 6)
                     print(temp)
+                    temp=8
                     if temp == 0:
                         led5(20, 0.1, 1, led1hue)
                     elif temp == 1:
@@ -439,6 +432,8 @@ while True:
                         led2(3, hsv_to_rgb(led1hue, 1, 255))
                     elif temp == 5:
                         led7(10000)
+                    elif temp == 8:
+                        led8(0.1,(random.randint(0,255),random.randint(0,255),random.randint(0,255)) )
             except:
                 pass
         elif setmode == 2:
@@ -461,6 +456,8 @@ while True:
                     led2(3, hsv_to_rgb(led1hue, 1, 255))
             except:
                 pass
+
+
 
 
 
