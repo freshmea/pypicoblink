@@ -223,14 +223,7 @@ class Cdata:
         return False
 
 
-def led6(speed):
-    for k in range(10):
-        for j in range(255):
-            for i in range(num_pixels):
-                pixel_index = (i * 256 // num_pixels) + j
-                pixels[i] = colorwheel(pixel_index & 255)
-            pixels.show()
-            time.sleep(speed)
+
 
 
 def led1(speed, speed2, hue):
@@ -244,19 +237,6 @@ def led1(speed, speed2, hue):
         pixels.show()
         time.sleep(speed2)
 
-
-def led5(speed, speed2, hue, sa):
-    for i in range(30):
-        pixels.fill(hsv_to_rgb(hue, sa, 255 / 29 * i))
-        pixels.show()
-        time.sleep(speed2)
-    time.sleep(speed)
-    for i in range(30):
-        pixels.fill(hsv_to_rgb(hue, sa, 255 / 29 * (29 - i)))
-        pixels.show()
-        time.sleep(speed2)
-
-
 def led2(speed1, color):
     for j in range(5):
         for i in range(6):
@@ -268,14 +248,12 @@ def led2(speed1, color):
             time.sleep(speed1)
         alloff(0)
 
-
 def led3(speed):
     for i in range(5000):
         pixels[random.randint(0, 35)] = hsv_to_rgb(random.random(), 1, 255)
         pixels.show()
         time.sleep(speed)
         alloff(0)
-
 
 def led4(time1, color):
     for j in range(5):
@@ -288,6 +266,25 @@ def led4(time1, color):
             pixels.show()
             time.sleep(time1)
 
+def led5(speed, speed2, hue, sa):
+    for i in range(30):
+        pixels.fill(hsv_to_rgb(hue, sa, 255 / 29 * i))
+        pixels.show()
+        time.sleep(speed2)
+    time.sleep(speed)
+    for i in range(30):
+        pixels.fill(hsv_to_rgb(hue, sa, 255 / 29 * (29 - i)))
+        pixels.show()
+        time.sleep(speed2)
+
+def led6(speed):
+    for k in range(10):
+        for j in range(255):
+            for i in range(num_pixels):
+                pixel_index = (i * 256 // num_pixels) + j
+                pixels[i] = colorwheel(pixel_index & 255)
+            pixels.show()
+            time.sleep(speed)
 
 def led7(time1):
     for i in range(time1):
@@ -296,31 +293,60 @@ def led7(time1):
             j.update()
         pixels.show()
 
+def led8(speed1, color):
+    for j in range(5):
+        for i in range(6):
+            if i == 1:
+                setstripcolor(i, (255, 0, 0))
+            if i == 2:
+                setstripcolor(i, (255, 165, 0))
+            if i == 3:
+                setstripcolor(i, (255, 255, 0))
+            if i == 4:
+                setstripcolor(i, (127, 255, 0))
+            if i == 5:
+                setstripcolor(i, (137, 207, 240))
+            if i == 6:
+                setstripcolor(i, (128, 0, 128))
+
+
+
+
+
+
+
+            else:
+                setstripcolor(i, color)
+            pixels.show()
+            time.sleep(speed1)
+        alloff(0)
+
+
+
+
 
 def alloff(time1):
     pixels.fill((0, 0, 0))
     pixels.show()
     time.sleep(time1)
 
-
 def setstripcolor(setnumber, color):
     for i in range(6):
         pixels[i + setnumber * 6] = color
 
-
 def playtone(ton, tempo):
     simpleio.tone(PIEZO_PIN, ton, duration=tempo / 100)
-
 
 def playsong(mysong, tempo):
     for i in range(len(mysong)):
         playtone(tones[mysong[i]], tempo[i])
 
 
+
 cleds = []
 for i in range(12):
     cleds.append(Cdata())
-
+/
 while True:
     if pin1.value == 1:
         curtime1 = time.monotonic_ns() / 1000000000
