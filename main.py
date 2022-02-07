@@ -7,6 +7,7 @@ import digitalio
 import simpleio
 import random
 from analogio import AnalogIn
+import colorsys
 
 
 def hsv_to_rgb(h, s, v):
@@ -223,9 +224,6 @@ class Cdata:
         return False
 
 
-
-
-
 def led1(speed, speed2, hue):
     for i in range(30):
         pixels.fill(hsv_to_rgb(hue, 1, 255 / 29 * i))
@@ -237,44 +235,40 @@ def led1(speed, speed2, hue):
         pixels.show()
         time.sleep(speed2)
 
+
 def led2(speed1, color):
     for j in range(5):
         for i in range(6):
-            if i == 4:
-                setstripcolor(i, (255, 0, 0))
-            else:
-                setstripcolor(i, color)
+            setstripcolor(i, color)
             pixels.show()
             time.sleep(speed1)
         alloff(0)
 
-def led3(speed):
+
+def led3(speed, number):
     for i in range(5000):
-        pixels[random.randint(0, 35)] = hsv_to_rgb(random.random(), 1, 255)
+        for j in range(number):
+            pixels[random.randint(0, 35)] = hsv_to_rgb(random.random(), 1, 255)
         pixels.show()
         time.sleep(speed)
         alloff(0)
+
 
 def led4(time1, color):
     for j in range(5):
         for i in range(6):
             alloff(0)
-            if i == 4:
-                setstripcolor(i, (255, 0, 0))
-            else:
-                setstripcolor(i, color)
+            setstripcolor(i, color)
             pixels.show()
             time.sleep(time1)
 
-def led5(speed, speed2, hue, sa):
-    for i in range(30):
-        pixels.fill(hsv_to_rgb(hue, sa, 255 / 29 * i))
-        pixels.show()
-        time.sleep(speed2)
-    time.sleep(speed)
-    for i in range(30):
-        pixels.fill(hsv_to_rgb(hue, sa, 255 / 29 * (29 - i)))
-        pixels.show()
+
+def led5(speed, speed2, hue):
+    for j in range(6):
+        for i in range(6):
+            pixels[i+j*6]=hsv_to_rgb(hue, 1, 255)
+            pixels.show()
+            time.sleep(speed)
         time.sleep(speed2)
 
 def led6(speed):
@@ -286,12 +280,14 @@ def led6(speed):
             pixels.show()
             time.sleep(speed)
 
+
 def led7(time1):
     for i in range(time1):
         for j in cleds:
             pixels[j.number] = hsv_to_rgb(j.colorhue, 1, j.bright)
             j.update()
         pixels.show()
+
 
 def led8(speed1, color):
     for j in range(5):
@@ -313,26 +309,34 @@ def led8(speed1, color):
             time.sleep(speed1)
         alloff(0)
 
-
-
-
+def led9(speed1, speed2, hue1, hue2):
+    pixels.fill(hsv_to_rgb(hue1, 1, 255))
+    for j in range(6):
+        for i in range(6):
+            pixels[i+j*6]=hsv_to_rgb(hue2, 1, 255)
+            pixels.show()
+            time.sleep(speed1)
+        time.sleep(speed2)
+        pixels.fill(hsv_to_rgb(hue1, 1, 255))
 
 def alloff(time1):
     pixels.fill((0, 0, 0))
     pixels.show()
     time.sleep(time1)
 
+
 def setstripcolor(setnumber, color):
     for i in range(6):
         pixels[i + setnumber * 6] = color
 
+
 def playtone(ton, tempo):
     simpleio.tone(PIEZO_PIN, ton, duration=tempo / 100)
+
 
 def playsong(mysong, tempo):
     for i in range(len(mysong)):
         playtone(tones[mysong[i]], tempo[i])
-
 
 
 cleds = []
@@ -340,122 +344,134 @@ for i in range(12):
     cleds.append(Cdata())
 
 while True:
-    if pin1.value == 1:
-        curtime1 = time.monotonic_ns() / 1000000000
-        temp = 0
-        while pin1.value == 1:
-            setstripcolor(temp, (255, 0, 0))
-            pixels.show()
-            simpleio.tone(PIEZO_PIN, temp * 100 + 1000, duration=0.3)
-            temp += 1
-        endtime1 = time.monotonic_ns() / 1000000000
+    led1hue = random.random()
+    # led1(1,0.1,random.random())
+    # led2(3, hsv_to_rgb(led1hue, 1, 255))
+    # led3(0.05, 4)
+    # led4(1, hsv_to_rgb(led1hue, 1, 255))
+    led9(0.05, 1, 1, 120/360)
+    # led4(3, hsv_to_rgb(led1hue, 1, 255))
 
-    if pin2.value == 1:
-        curtime2 = time.monotonic_ns() / 1000000000
-        temp = 0
-        while pin2.value == 1:
-            setstripcolor(temp, (0, 255, 0))
-            pixels.show()
-            simpleio.tone(PIEZO_PIN, temp * 100 + 1000, duration=0.3)
-            temp += 1
-        endtime2 = time.monotonic_ns() / 1000000000
+    # led6(0.01)
 
-    if endtime1 - curtime1 < 0.2:
-        pass
-    elif endtime1 - curtime1 < 0.4:
-        setmode = 0
-    elif endtime1 - curtime1 < 0.7:
-        setmode = 1
-    elif endtime1 - curtime1 < 1.0:
-        setmode = 2
-    elif endtime1 - curtime1 < 1.3:
-        setmode = 3
-    elif endtime1 - curtime1 < 1.6:
-        setmode = 4
-    elif endtime1 - curtime1 < 1.9:
-        setmode = 5
-        led1hue = random.random()
-        led1(0.5, 0.01, led1hue)
-        led6(0.01)
-    else:
-        pass
+    # led7(10000)
+    # led8(0.1, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
 
-    if endtime2 - curtime2 < 0.2:
-        pass
-    elif endtime2 - curtime2 < 0.4:
-        onvalue = 100
-    elif endtime2 - curtime2 < 0.7:
-        onvalue = 4000
-    elif endtime2 - curtime2 < 1.0:
-        onvalue = 7000
-    elif endtime2 - curtime2 < 1.3:
-        onvalue = 13000
-    elif endtime2 - curtime2 < 1.6:
-        onvalue = 20000
-    elif endtime2 - curtime2 < 1.9:
-        onvalue = 30000
-    alloff(0)
+#     if pin1.value == 1:
+#         curtime1 = time.monotonic_ns() / 1000000000
+#         temp = 0
+#         while pin1.value == 1:
+#             setstripcolor(temp, (255, 0, 0))
+#             pixels.show()
+#             simpleio.tone(PIEZO_PIN, temp * 100 + 1000, duration=0.3)
+#             temp += 1
+#         endtime1 = time.monotonic_ns() / 1000000000
+#
+#     if pin2.value == 1:
+#         curtime2 = time.monotonic_ns() / 1000000000
+#         temp = 0
+#         while pin2.value == 1:
+#             setstripcolor(temp, (0, 255, 0))
+#             pixels.show()
+#             simpleio.tone(PIEZO_PIN, temp * 100 + 1000, duration=0.3)
+#             temp += 1
+#         endtime2 = time.monotonic_ns() / 1000000000
+#
+#     if endtime1 - curtime1 < 0.2:
+#         pass
+#     elif endtime1 - curtime1 < 0.4:
+#         setmode = 0
+#     elif endtime1 - curtime1 < 0.7:
+#         setmode = 1
+#     elif endtime1 - curtime1 < 1.0:
+#         setmode = 2
+#     elif endtime1 - curtime1 < 1.3:
+#         setmode = 3
+#     elif endtime1 - curtime1 < 1.6:
+#         setmode = 4
+#     elif endtime1 - curtime1 < 1.9:
+#         setmode = 5
+#         led1hue = random.random()
+#         led1(0.5, 0.01, led1hue)
+#         led6(0.01)
+#     else:
+#         pass
+#
+#     if endtime2 - curtime2 < 0.2:
+#         pass
+#     elif endtime2 - curtime2 < 0.4:
+#         onvalue = 100
+#     elif endtime2 - curtime2 < 0.7:
+#         onvalue = 4000
+#     elif endtime2 - curtime2 < 1.0:
+#         onvalue = 7000
+#     elif endtime2 - curtime2 < 1.3:
+#         onvalue = 13000
+#     elif endtime2 - curtime2 < 1.6:
+#         onvalue = 20000
+#     elif endtime2 - curtime2 < 1.9:
+#         onvalue = 30000
+#     alloff(0)
+#
+#     curtime1 = time.monotonic_ns() / 1000000000
+#     endtime1 = time.monotonic_ns() / 1000000000
+#     curtime2 = time.monotonic_ns() / 1000000000
+#     endtime2 = time.monotonic_ns() / 1000000000
+#     time.sleep(0.1)
+#
+#     if pin3.value < onvalue:
+#         on = True
+#     else:
+#         on = False
+#
+#     if on:
+#         if setmode == 0:
+#             try:
+#                 if sonar_dis > sonar.distance:
+#                     led5(20, 0.1, 1, led1hue)
+#             except:
+#                 pass
+#         elif setmode == 1:
+#             try:
+#                 if sonar_dis > sonar.distance:
+#                     temp = random.randint(0, 7)
+#                     if temp == 0:
+#                         led5(20, 0.1, 1, led1hue)
+#                     elif temp == 1:
+#                         led4(3, hsv_to_rgb(led1hue, 1, 255))
+#                     elif temp == 2:
+#                         led3(0.01)
+#                     elif temp == 3:
+#                         led6(0.01)
+#                     elif temp == 4:
+#                         led2(3, hsv_to_rgb(led1hue, 1, 255))
+#                     elif temp == 5:
+#                         led7(10000)
+#                     elif temp == 6:
+#                         led8(0.1,(random.randint(0,255),random.randint(0,255),random.randint(0,255)) )
+#             except:
+#                 pass
+#         elif setmode == 2:
+#             try:
+#                 if sonar_dis > sonar.distance:
+#                     temp = random.randint(0, 4)
+#                     print(temp)
+#                     playsong(songs[temp], tempos[temp])
+#             except:
+#                 pass
+#         elif setmode == 3:
+#             try:
+#                 if sonar_dis > sonar.distance:
+#                     led6(1000)
+#             except:
+#                 pass
+#         elif setmode == 4:
+#             try:
+#                 if sonar_dis > sonar.distance:
+#                     led2(3, hsv_to_rgb(led1hue, 1, 255))
+#             except:
+#                 pass
 
-    curtime1 = time.monotonic_ns() / 1000000000
-    endtime1 = time.monotonic_ns() / 1000000000
-    curtime2 = time.monotonic_ns() / 1000000000
-    endtime2 = time.monotonic_ns() / 1000000000
-    time.sleep(0.1)
-
-    if pin3.value < onvalue:
-        on = True
-    else:
-        on = False
-
-    if on:
-        if setmode == 0:
-            try:
-                if sonar_dis > sonar.distance:
-                    led5(20, 0.1, 1, led1hue)
-            except:
-                pass
-        elif setmode == 1:
-            try:
-                if sonar_dis > sonar.distance:
-                    temp = random.randint(0, 6)
-                    print(temp)
-                    temp=8
-                    if temp == 0:
-                        led5(20, 0.1, 1, led1hue)
-                    elif temp == 1:
-                        led4(3, hsv_to_rgb(led1hue, 1, 255))
-                    elif temp == 2:
-                        led3(0.01)
-                    elif temp == 3:
-                        led6(0.01)
-                    elif temp == 4:
-                        led2(3, hsv_to_rgb(led1hue, 1, 255))
-                    elif temp == 5:
-                        led7(10000)
-                    elif temp == 8:
-                        led8(0.1,(random.randint(0,255),random.randint(0,255),random.randint(0,255)) )
-            except:
-                pass
-        elif setmode == 2:
-            try:
-                if sonar_dis > sonar.distance:
-                    temp = random.randint(0, 4)
-                    print(temp)
-                    playsong(songs[temp], tempos[temp])
-            except:
-                pass
-        elif setmode == 3:
-            try:
-                if sonar_dis > sonar.distance:
-                    led6(1000)
-            except:
-                pass
-        elif setmode == 4:
-            try:
-                if sonar_dis > sonar.distance:
-                    led2(3, hsv_to_rgb(led1hue, 1, 255))
-            except:
-                pass
 
 
 
